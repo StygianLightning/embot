@@ -15,6 +15,23 @@ pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
 
         if let Some(channel) = channel {
             println!("found channel {:?}", channel);
+
+            channel
+                .send_message(ctx, |m| {
+                    m.embed(|mut e| {
+                        e.title("Embed title");
+                        e.author(|author| {
+                            author.name(&msg.author.name);
+                            author
+                        });
+
+                        e.description("description");
+
+                        e
+                    });
+                    m
+                })
+                .await?;
         }
     }
 
