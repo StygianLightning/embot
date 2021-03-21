@@ -52,3 +52,12 @@ impl From<&HashMap<ChannelId, ChannelId>> for SavedChannelLinks {
         }
     }
 }
+
+impl Into<HashMap<ChannelId, ChannelId>> for SavedChannelLinks {
+    fn into(self) -> HashMap<ChannelId, ChannelId, RandomState> {
+        self.links
+            .into_iter()
+            .map(|link| (link.from, link.to))
+            .collect()
+    }
+}

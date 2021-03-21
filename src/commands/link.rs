@@ -1,9 +1,10 @@
-use crate::channel_links::ChannelLinks;
+use crate::channel_links::{ChannelLinks, SavedChannelLinks, CHANNEL_LINKS_PATH};
 use serenity::client::Context;
 use serenity::framework::standard::{macros::command, CommandResult};
 use serenity::model::channel::{Embed, GuildChannel, Message};
 use serenity::model::id::ChannelId;
 use std::collections::HashMap;
+use std::path::Path;
 use std::str::FromStr;
 
 #[command]
@@ -24,6 +25,17 @@ pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
             {
                 let mut links = channel_links.write().await;
                 links.insert(msg.channel_id, channel.id);
+
+                let saved_links: SavedChannelLinks = (&*links).into();
+
+                match serde_json::to_string(&saved_links) {
+                    Ok(json) => {
+                        if let Err(e) = std::fs::write(Path::new(CHANNEL_LINKS_PATH), &json) {
+                            println!("Error {} occurred while saving links {}", e, json);
+                        }
+                    }
+                    Err(e) => println!("Error trying to convert {:?} to json: {}", saved_links, e),
+                }
             }
 
             msg.reply(ctx, "linked channels").await?;
