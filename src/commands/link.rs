@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 #[command]
+#[only_in(guilds)]
 #[description = "Link this channel to another; messages from this channel will be re-posted to the linked channel"]
 pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
     for channel in msg.content.split_ascii_whitespace().skip(1) {
