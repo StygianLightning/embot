@@ -9,7 +9,6 @@ use std::str::FromStr;
 #[command]
 #[description = "Link this channel to another; messages from this channel will be re-posted to the linked channel"]
 pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
-    println!("msg: {:#?}", msg);
     for channel in msg.content.split_ascii_whitespace().skip(1) {
         let guild: HashMap<ChannelId, GuildChannel> = msg.guild_id.unwrap().channels(ctx).await?;
 
@@ -24,7 +23,6 @@ pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
             {
                 let mut links = channel_links.write().await;
                 links.insert(msg.channel_id, channel.id);
-                println!("links: {:?}", *links)
             }
 
             msg.reply(ctx, "linked channels").await?;

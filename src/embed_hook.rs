@@ -18,14 +18,8 @@ pub async fn embed(ctx: &Context, msg: &Message) {
 
     let target_channel = {
         let channel_links = channel_links.read().await;
-        println!("channel links: {:?}", *channel_links);
         channel_links.get(&msg.channel_id).cloned()
     };
-
-    println!(
-        "input channel: {:?}, output channel: {:?}",
-        msg.channel_id, target_channel
-    );
 
     if let Some(target_channel) = target_channel {
         let message_link = format!(
