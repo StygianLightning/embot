@@ -25,7 +25,9 @@ pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
 
             {
                 let mut links = channel_links.write().await;
-                links.insert(msg.channel_id, channel.id);
+                if let Some(previous_link) = links.insert(msg.channel_id, channel.id) {
+                    println!("removing link from {} to {}", msg.channel_id, previous_link);
+                }
 
                 let saved_links: SavedChannelLinks = (&*links).into();
 

@@ -24,7 +24,7 @@ pub async fn embed(ctx: &Context, msg: &Message) {
     if let Some(target_channel) = target_channel {
         let message_link = format!(
             "https://discord.com/channels/{}/{}/{}",
-            msg.guild_id.unwrap(),
+            msg.guild_id.unwrap(), // this is safe because only guilds can be linked in the first place.
             msg.channel_id,
             msg.id
         );
@@ -41,7 +41,9 @@ pub async fn embed(ctx: &Context, msg: &Message) {
 
                 m.embed(|e| {
                     e.author(|author| {
-                        author.icon_url(msg.author.avatar_url().unwrap());
+                        if let Some(avatar_url) = msg.author.avatar_url() {
+                            author.icon_url(avatar_url);
+                        }
                         author.name(&msg.author.name);
                         author
                     });
@@ -53,7 +55,9 @@ pub async fn embed(ctx: &Context, msg: &Message) {
                         if let Some(title) = &embed_url.title {
                             e.title(title);
                         }
-                        e.url(embed_url.url.as_ref().unwrap());
+                        if let Some(url) = embed_url.url.as_ref() {
+                            e.url(url);
+                        }
                     }
 
                     e
