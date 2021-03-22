@@ -3,15 +3,39 @@ use serenity::client::Context;
 use serenity::framework::standard::{macros::command, CommandResult};
 use serenity::model::channel::{Embed, GuildChannel, Message};
 use serenity::model::id::ChannelId;
+use serenity::model::Permissions;
 use std::collections::HashMap;
 use std::path::Path;
 use std::str::FromStr;
 
 #[command]
 #[only_in(guilds)]
-#[required_permissions("ADMINISTRATOR")]
 #[description = "Link this channel to another; messages from this channel will be re-posted to the linked channel"]
 pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
+    let mut is_admin = false;
+
+    if let Some(guild) = msg.guild(ctx).await {
+        is_admin = msg.author.id == guild.owner_id;
+    }
+
+    if let Some(member) = &msg.member {
+        for role in &member.roles {
+            if role
+                .to_role_cached(ctx)
+                .await
+                .map_or(false, |r| r.has_permission(Permissions::ADMINISTRATOR))
+            {
+                is_admin = true;
+            }
+        }
+    }
+
+    if !is_admin {
+        msg.reply(ctx, "Only administrators can link channels!")
+            .await?;
+        return Ok(());
+    }
+
     for channel in msg.content.split_ascii_whitespace().skip(1) {
         let guild: HashMap<ChannelId, GuildChannel> = msg.guild_id.unwrap().channels(ctx).await?;
 
