@@ -1,12 +1,12 @@
-use crate::channel_links::{ChannelLinks, SavedChannelLinks, CHANNEL_LINKS_PATH};
+use crate::channel_links::{ChannelLinks};
 use crate::new_link_message_sender::NewLinkMessageSender;
 use serenity::client::Context;
 use serenity::framework::standard::{macros::command, CommandResult};
-use serenity::model::channel::{Embed, GuildChannel, Message};
+use serenity::model::channel::{GuildChannel, Message};
 use serenity::model::id::ChannelId;
 use serenity::model::Permissions;
 use std::collections::HashMap;
-use std::path::Path;
+
 use std::str::FromStr;
 
 #[command]

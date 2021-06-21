@@ -1,11 +1,11 @@
 use crate::channel_links::ChannelLinks;
 use serenity::framework::standard::macros::hook;
-use serenity::model::channel::{GuildChannel, Message};
-use serenity::model::id::ChannelId;
+use serenity::model::channel::{Message};
+
 use serenity::prelude::Context;
 use serenity::utils::MessageBuilder;
-use std::collections::HashMap;
-use std::str::FromStr;
+
+
 
 #[hook]
 pub async fn embed(ctx: &Context, msg: &Message) {

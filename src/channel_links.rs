@@ -1,31 +1,11 @@
-use std::{
-    collections::HashMap,
-    env,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-};
-
 use serde::{Deserialize, Serialize};
-
-use serenity::{
-    async_trait,
-    framework::standard::{
-        macros::{command, group, hook},
-        Args, CommandResult, StandardFramework,
-    },
-    model::{channel::Message, gateway::Ready},
-    prelude::*,
-};
-
 use serenity::model::id::ChannelId;
+use serenity::prelude::*;
 use std::collections::hash_map::RandomState;
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 pub struct ChannelLinks;
-
-pub const CHANNEL_LINKS_PATH: &'static str = "channel_links.json";
 
 impl TypeMapKey for ChannelLinks {
     type Value = Arc<RwLock<HashMap<ChannelId, ChannelId>>>;
