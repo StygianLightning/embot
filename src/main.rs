@@ -1,12 +1,15 @@
 mod channel_links;
 mod commands;
 mod embed_hook;
+mod new_link_message_sender;
 
 use channel_links::{ChannelLinks, SavedChannelLinks, CHANNEL_LINKS_PATH};
 use commands::help::*;
 use commands::link::*;
 use embed_hook::embed;
+use new_link_message_sender::NewLinkMessageSender;
 
+use crate::new_link_message_sender::new_link_message_receiver_loop;
 use serenity::async_trait;
 use serenity::client::{Client, Context, EventHandler};
 use serenity::framework::standard::{macros::group, StandardFramework};
@@ -65,10 +68,17 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .expect("Error creating client");
 
+    let (sender, receiver) = tokio::sync::mpsc::unbounded_channel();
+
+    let channel_links = Arc::new(RwLock::new(saved_channel_links));
+
     {
         let mut data = client.data.write().await;
-        data.insert::<ChannelLinks>(Arc::new(RwLock::new(saved_channel_links)));
+        data.insert::<ChannelLinks>(Arc::clone(&channel_links));
+        data.insert::<NewLinkMessageSender>(sender);
     }
+
+    tokio::spawn(new_link_message_receiver_loop(receiver, channel_links));
 
     if let Err(why) = client.start().await {
         println!("An error occurred while running the client: {:?}", why);

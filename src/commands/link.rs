@@ -1,4 +1,5 @@
 use crate::channel_links::{ChannelLinks, SavedChannelLinks, CHANNEL_LINKS_PATH};
+use crate::new_link_message_sender::NewLinkMessageSender;
 use serenity::client::Context;
 use serenity::framework::standard::{macros::command, CommandResult};
 use serenity::model::channel::{Embed, GuildChannel, Message};
@@ -40,11 +41,16 @@ pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
         let guild: HashMap<ChannelId, GuildChannel> = msg.guild_id.unwrap().channels(ctx).await?;
 
         if let Some(channel) = guild.get(&ChannelId::from_str(channel)?) {
-            let channel_links = {
+            let (channel_links, sender) = {
                 let data = ctx.data.read().await;
-                data.get::<ChannelLinks>()
-                    .expect("Expected ChannelLinks were not set up")
-                    .clone()
+                (
+                    data.get::<ChannelLinks>()
+                        .expect("Expected ChannelLinks were not set up")
+                        .clone(),
+                    data.get::<NewLinkMessageSender>()
+                        .expect("Expected new channel message sender was not set up")
+                        .clone(),
+                )
             };
 
             {
@@ -53,15 +59,8 @@ pub async fn link(ctx: &Context, msg: &Message) -> CommandResult {
                     println!("removing link from {} to {}", msg.channel_id, previous_link);
                 }
 
-                let saved_links: SavedChannelLinks = (&*links).into();
-
-                match serde_json::to_string(&saved_links) {
-                    Ok(json) => {
-                        if let Err(e) = std::fs::write(Path::new(CHANNEL_LINKS_PATH), &json) {
-                            println!("Error {} occurred while saving links {}", e, json);
-                        }
-                    }
-                    Err(e) => println!("Error trying to convert {:?} to json: {}", saved_links, e),
+                if let Err(e) = sender.send(()) {
+                    println!("Error sending new channel link notification: {}", e);
                 }
             }
 
