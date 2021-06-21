@@ -2,11 +2,11 @@ mod channel_links;
 mod commands;
 mod embed_hook;
 
+use channel_links::{ChannelLinks, SavedChannelLinks, CHANNEL_LINKS_PATH};
 use commands::help::*;
 use commands::link::*;
+use embed_hook::embed;
 
-use crate::channel_links::{ChannelLinks, SavedChannelLinks, CHANNEL_LINKS_PATH};
-use crate::embed_hook::embed;
 use serenity::async_trait;
 use serenity::client::{Client, Context, EventHandler};
 use serenity::framework::standard::{macros::group, StandardFramework};
@@ -17,6 +17,8 @@ use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tracing_subscriber::filter::LevelFilter;
+use tracing_subscriber::fmt::Subscriber;
 
 #[group]
 #[commands(link)]
@@ -33,6 +35,14 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
+    let subscriber = Subscriber::builder()
+        .with_ansi(false)
+        .with_max_level(LevelFilter::INFO)
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("Setting global tracing default subscriber failed.");
+
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(";"))
         .help(&MY_HELP)
